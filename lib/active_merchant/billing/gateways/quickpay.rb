@@ -90,6 +90,8 @@ module ActiveMerchant #:nodoc:
       end
 
       def store(creditcard, options = {})
+        requires!(options, :description, :order_id)
+
         post = {}
 
         add_creditcard(post, creditcard, options)
