@@ -184,7 +184,7 @@ module ActiveMerchant #:nodoc:
         params[:protocol] = PROTOCOL
         params[:msgtype]  = action.to_s
         params[:merchant] = @options[:login]
-        #params[:testmode] = '1' if test?
+        params[:testmode] = '1' if test?
         params[:md5check] = generate_check_hash(action, params)
         
         params.collect { |key, value| "#{key}=#{CGI.escape(value.to_s)}" }.join("&")
