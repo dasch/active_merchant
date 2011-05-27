@@ -16,14 +16,14 @@ module ActiveMerchant #:nodoc:
       PROTOCOL = 3
 
       MD5_CHECK_FIELDS = {
-        :authorize => [:protocol, :msgtype, :merchant, :ordernumber, :amount, :currency, :autocapture, :cardnumber, :expirationdate, :cvd, :cardtypelock, :testmode],
-        :capture   => [:protocol, :msgtype, :merchant, :amount, :transaction],
-        :cancel    => [:protocol, :msgtype, :merchant, :transaction],
-        :refund    => [:protocol, :msgtype, :merchant, :amount, :transaction],
-        :subscribe => [:protocol, :msgtype, :merchant, :ordernumber, :cardnumber, :expirationdate, :cvd, :cardtypelock, :description, :testmode],
-        :recurring => [:protocol, :msgtype, :merchant, :ordernumber, :amount, :currency, :autocapture, :transaction],
-        :status    => [:protocol, :msgtype, :merchant, :transaction],
-        :chstatus  => [:protocol, :msgtype, :merchant],
+        :authorize => %w(protocol msgtype merchant ordernumber amount currency autocapture cardnumber expirationdate cvd cardtypelock testmode),
+        :capture   => %w(protocol msgtype merchant amount transaction),
+        :cancel    => %w(protocol msgtype merchant transaction),
+        :refund    => %w(protocol msgtype merchant amount transaction),
+        :subscribe => %w(protocol msgtype merchant ordernumber cardnumber expirationdate cvd cardtypelock description testmode),
+        :recurring => %w(protocol msgtype merchant ordernumber amount currency autocapture transaction),
+        :status    => %w(protocol msgtype merchant transaction),
+        :chstatus  => %w(protocol msgtype merchant)
       }
 
       APPROVED = '000'
@@ -199,7 +199,7 @@ module ActiveMerchant #:nodoc:
 
       def generate_check_hash(action, params)
         string = MD5_CHECK_FIELDS[action].collect do |key|
-          params[key]
+          params[key.to_sym]
         end.join('')
 
         # Add the md5checkword
