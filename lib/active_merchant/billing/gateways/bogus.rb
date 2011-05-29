@@ -17,9 +17,9 @@ module ActiveMerchant #:nodoc:
       self.homepage_url = 'http://example.com'
       self.display_name = 'Bogus'
       
-      def authorize(money, ident, options = {})
+      def authorize(money, credit_card_or_reference, options = {})
         money = amount(money)
-        case normalize_ident(ident)
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {:authorized_amount => money}, :test => true, :authorization => AUTHORIZATION )
         when '2'
@@ -29,9 +29,9 @@ module ActiveMerchant #:nodoc:
         end      
       end
   
-      def purchase(money, ident, options = {})
+      def purchase(money, credit_card_or_reference, options = {})
         money = amount(money)
-        case normalize_ident(ident)
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {:paid_amount => money}, :test => true)
         when '2'
@@ -41,9 +41,9 @@ module ActiveMerchant #:nodoc:
         end
       end
  
-      def credit(money, ident, options = {})
+      def credit(money, credit_card_or_reference, options = {})
         money = amount(money)
-        case normalize_ident(ident)
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           raise Error, CREDIT_ERROR_MESSAGE
         when '2'
@@ -53,9 +53,9 @@ module ActiveMerchant #:nodoc:
         end
       end
  
-      def capture(money, ident, options = {})
+      def capture(money, credit_card_or_reference, options = {})
         money = amount(money)
-        case normalize_ident(ident)
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           raise Error, CAPTURE_ERROR_MESSAGE
         when '2'
@@ -65,19 +65,19 @@ module ActiveMerchant #:nodoc:
         end
       end
 
-      def void(ident, options = {})
-        case normalize_ident(ident)
+      def void(credit_card_or_reference, options = {})
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           raise Error, VOID_ERROR_MESSAGE
         when '2'
-          Response.new(false, FAILURE_MESSAGE, {:authorization => ident, :error => FAILURE_MESSAGE }, :test => true)
+          Response.new(false, FAILURE_MESSAGE, {:authorization => credit_card_or_reference, :error => FAILURE_MESSAGE }, :test => true)
         else
-          Response.new(true, SUCCESS_MESSAGE, {:authorization => ident}, :test => true)
+          Response.new(true, SUCCESS_MESSAGE, {:authorization => credit_card_or_reference}, :test => true)
         end
       end
       
-      def store(ident, options = {})
-        case normalize_ident(ident)
+      def store(credit_card_or_reference, options = {})
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {:billingid => '1'}, :test => true, :authorization => AUTHORIZATION )
         when '2'
@@ -87,8 +87,8 @@ module ActiveMerchant #:nodoc:
         end              
       end
       
-      def unstore(ident, options = {})
-        case normalize_ident(ident)
+      def unstore(credit_card_or_reference, options = {})
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {}, :test => true)
         when '2'
@@ -100,8 +100,12 @@ module ActiveMerchant #:nodoc:
 
       private
 
-      def normalize_ident(ident)
-        ident.respond_to?(:number) ? ident.number : ident.to_s
+      def normalize_credit_card_or_reference(credit_card_or_reference)
+        if credit_card_or_reference.respond_to?(:number)
+          credit_card_or_reference.number
+        else
+          credit_card_or_reference.to_s
+        end
       end
     end
   end
