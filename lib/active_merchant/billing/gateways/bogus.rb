@@ -18,9 +18,9 @@ module ActiveMerchant #:nodoc:
       self.homepage_url = 'http://example.com'
       self.display_name = 'Bogus'
       
-      def authorize(money, creditcard, options = {})
+      def authorize(money, credit_card_or_reference, options = {})
         money = amount(money)
-        case creditcard.number
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {:authorized_amount => money}, :test => true, :authorization => AUTHORIZATION )
         when '2'
@@ -30,9 +30,9 @@ module ActiveMerchant #:nodoc:
         end      
       end
   
-      def purchase(money, creditcard, options = {})
+      def purchase(money, credit_card_or_reference, options = {})
         money = amount(money)
-        case creditcard.number
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {:paid_amount => money}, :test => true)
         when '2'
@@ -42,26 +42,9 @@ module ActiveMerchant #:nodoc:
         end
       end
  
-      def recurring(money, creditcard, options = {})
+      def credit(money, credit_card_or_reference, options = {})
         money = amount(money)
-        case creditcard.number
-        when '1'
-          Response.new(true, SUCCESS_MESSAGE, {:paid_amount => money}, :test => true)
-        when '2'
-          Response.new(false, FAILURE_MESSAGE, {:paid_amount => money, :error => FAILURE_MESSAGE },:test => true)
-        else
-          raise Error, ERROR_MESSAGE
-        end
-      end
- 
-      def credit(money, creditcard, options = {})
-        if creditcard.is_a?(String)
-          deprecated CREDIT_DEPRECATION_MESSAGE
-          return refund(money, creditcard, options)
-        end
-
-        money = amount(money)
-        case creditcard.number
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {:paid_amount => money}, :test => true )
         when '2'
@@ -83,9 +66,9 @@ module ActiveMerchant #:nodoc:
         end
       end
  
-      def capture(money, ident, options = {})
+      def capture(money, credit_card_or_reference, options = {})
         money = amount(money)
-        case ident
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           raise Error, CAPTURE_ERROR_MESSAGE
         when '2'
@@ -95,19 +78,19 @@ module ActiveMerchant #:nodoc:
         end
       end
 
-      def void(ident, options = {})
-        case ident
+      def void(credit_card_or_reference, options = {})
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           raise Error, VOID_ERROR_MESSAGE
         when '2'
-          Response.new(false, FAILURE_MESSAGE, {:authorization => ident, :error => FAILURE_MESSAGE }, :test => true)
+          Response.new(false, FAILURE_MESSAGE, {:authorization => credit_card_or_reference, :error => FAILURE_MESSAGE }, :test => true)
         else
-          Response.new(true, SUCCESS_MESSAGE, {:authorization => ident}, :test => true)
+          Response.new(true, SUCCESS_MESSAGE, {:authorization => credit_card_or_reference}, :test => true)
         end
       end
       
-      def store(creditcard, options = {})
-        case creditcard.number
+      def store(credit_card_or_reference, options = {})
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {:billingid => '1'}, :test => true, :authorization => AUTHORIZATION )
         when '2'
@@ -117,14 +100,24 @@ module ActiveMerchant #:nodoc:
         end              
       end
       
-      def unstore(identification, options = {})
-        case identification
+      def unstore(credit_card_or_reference, options = {})
+        case normalize_credit_card_or_reference(credit_card_or_reference)
         when '1'
           Response.new(true, SUCCESS_MESSAGE, {}, :test => true)
         when '2'
           Response.new(false, FAILURE_MESSAGE, {:error => FAILURE_MESSAGE },:test => true)
         else
           raise Error, UNSTORE_ERROR_MESSAGE
+        end
+      end
+
+      private
+
+      def normalize_credit_card_or_reference(credit_card_or_reference)
+        if credit_card_or_reference.respond_to?(:number)
+          credit_card_or_reference.number
+        else
+          credit_card_or_reference.to_s
         end
       end
     end

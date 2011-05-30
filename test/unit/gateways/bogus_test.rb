@@ -13,11 +13,7 @@ class BogusTest < Test::Unit::TestCase
   end
 
   def test_authorize
-    assert  @gateway.authorize(1000, credit_card('1')).success?
-    assert !@gateway.authorize(1000, credit_card('2')).success?
-    assert_raises(ActiveMerchant::Billing::Error) do
-      @gateway.authorize(1000, credit_card('123'))
-    end
+    @gateway.authorize(1000, @creditcard)    
   end
 
   def test_purchase
@@ -25,14 +21,6 @@ class BogusTest < Test::Unit::TestCase
     assert !@gateway.purchase(1000, credit_card('2')).success?
     assert_raises(ActiveMerchant::Billing::Error) do
       @gateway.purchase(1000, credit_card('123'))
-    end
-  end
-
-  def test_recurring
-    assert  @gateway.recurring(1000, credit_card('1')).success?
-    assert !@gateway.recurring(1000, credit_card('2')).success?
-    assert_raises(ActiveMerchant::Billing::Error) do
-      @gateway.recurring(1000, credit_card('123'))
     end
   end
 
@@ -54,7 +42,7 @@ class BogusTest < Test::Unit::TestCase
   end
 
   def test_refund
-    assert  @gateway.refund(1000, '1337').success?
+    assert  @gateway.refund(1000, '3').success?
     assert  @gateway.refund(1000, @response.params["transid"]).success?
     assert !@gateway.refund(1000, '2').success?
     assert_raises(ActiveMerchant::Billing::Error) do
@@ -62,12 +50,8 @@ class BogusTest < Test::Unit::TestCase
     end
   end
 
-  def test_credit_uses_refund
-    options = {:foo => :bar}
-    @gateway.expects(:refund).with(1000, '1337', options)
-    assert_deprecation_warning(Gateway::CREDIT_DEPRECATION_MESSAGE, @gateway) do
-      @gateway.credit(1000, '1337', options)
-    end
+  def test_capture
+    @gateway.capture(1000, @response.params["transid"])
   end
 
   def test_void
