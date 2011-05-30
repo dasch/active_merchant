@@ -2,7 +2,7 @@ module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     # Bogus Gateway
     class BogusGateway < Gateway
-      AUTHORIZATION = '53433'
+      AUTHORIZATION = '1'
       
       SUCCESS_MESSAGE = "Bogus Gateway: Forced success"
       FAILURE_MESSAGE = "Bogus Gateway: Forced failure"
